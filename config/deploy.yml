@@ -22,7 +22,7 @@ servers:
 #
 proxy:
   ssl: true
-  host: swatch.two-g.ru
+  host: appswatch.two-g.ru
 
 # Where you keep your container images.
 registry:
