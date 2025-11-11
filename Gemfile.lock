@@ -1,3 +1,11 @@
+GIT
+  remote: https://github.com/stap780/insales_api.git
+  revision: ffd221742607949c1f8fccd015b1429a183d065e
+  specs:
+    insales_api (0.2.1)
+      activeresource (>= 3.0.0)
+      activesupport (>= 3.0.0)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -143,9 +151,6 @@ GEM
       actionpack (>= 6.0.0)
       activesupport (>= 6.0.0)
       railties (>= 6.0.0)
-    insales_api (0.2.0)
-      activeresource (>= 3.0.0)
-      activesupport (>= 3.0.0)
     io-console (0.8.1)
     irb (1.15.3)
       pp (>= 0.6.0)
@@ -416,7 +421,7 @@ DEPENDENCIES
   debug
   image_processing (~> 1.2)
   importmap-rails
-  insales_api
+  insales_api!
   jbuilder
   kamal
   propshaft
