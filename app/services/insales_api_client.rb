@@ -12,7 +12,7 @@ class InsalesApiClient
 
   # POST /admin/recurring_application_charges.json
   def create_recurring_charge(shop, price:, trial_days: 7, name: "Basic")
-    url = URI("https://#{shop}/admin/recurring_application_charges.json")
+    url = URI("https://#{@app_identifier}:#{@api_password}@#{shop}/admin/recurring_application_charges.json")
     
     charge_params = {
       name: name,
@@ -30,21 +30,21 @@ class InsalesApiClient
 
   # GET /admin/recurring_application_charges/:id.json
   def get_recurring_charge(shop, charge_id)
-    url = URI("https://#{shop}/admin/recurring_application_charges/#{charge_id}.json")
+    url = URI("https://#{@app_identifier}:#{@api_password}@#{shop}/admin/recurring_application_charges/#{charge_id}.json")
     response = make_request(:get, url)
     handle_response(response)
   end
 
   # DELETE /admin/recurring_application_charges/:id.json
   def destroy_recurring_charge(shop, charge_id)
-    url = URI("https://#{shop}/admin/recurring_application_charges/#{charge_id}.json")
+    url = URI("https://#{@app_identifier}:#{@api_password}@#{shop}/admin/recurring_application_charges/#{charge_id}.json")
     response = make_request(:delete, url)
     handle_response(response)
   end
 
   # POST /admin/recurring_application_charges/:id/add_free_days.json
   def add_free_days(shop, charge_id, days)
-    url = URI("https://#{shop}/admin/recurring_application_charges/#{charge_id}/add_free_days.json")
+    url = URI("https://#{@app_identifier}:#{@api_password}@#{shop}/admin/recurring_application_charges/#{charge_id}/add_free_days.json")
     payload = { days: days }
     response = make_request(:post, url, payload)
     handle_response(response)
@@ -67,7 +67,6 @@ class InsalesApiClient
                     end
 
     request_class["Content-Type"] = "application/json"
-    request_class.basic_auth(@app_identifier, @api_password)
 
     if payload && (method == :post || method == :put)
       request_class.body = payload.to_json
@@ -88,7 +87,7 @@ class InsalesApiClient
     when 403
       { success: false, error: "Forbidden - check app permissions" }
     when 404
-      { success: false, error: "Not found" }
+      { success: false, error: "Not found - endpoint or shop not found. Response: #{response.body[0..200]}" }
     when 400
       { success: false, error: "Bad request: #{response.body}" }
     when 500, 502, 503, 504

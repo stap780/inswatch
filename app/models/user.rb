@@ -8,13 +8,14 @@ class User < ApplicationRecord
   validates :insales_id, presence: true, uniqueness: true, if: -> { insales_id.present? }
   validates :shop, presence: true, if: -> { shop.present? }
 
-  after_create_commit :create_insales_charge_after_install
+  after_create_commit :create_insales_charge_after_install, if: -> { installed? }
 
   private
 
   def create_insales_charge_after_install
     return unless insales_id.present? && shop.present? && installed? && insales_api_password.present?
     begin
+      Rails.logger.info "Creating charge for user #{id}, shop: #{shop}, api_password present: #{insales_api_password.present?}"
       client = InsalesApiClient.new(insales_api_password)
       response = client.create_recurring_charge(
         shop,
@@ -31,11 +32,13 @@ class User < ApplicationRecord
           paid_till: data["paid_till"]&.to_date,
           blocked: data["blocked"] || false
         )
+        Rails.logger.info "Charge created successfully for user #{id}, charge_id: #{data['id']}"
       else
         Rails.logger.error "Create charge after install failed for user #{id}: #{response[:error]}"
       end
     rescue => e
       Rails.logger.error "Create charge after install exception for user #{id}: #{e.message}"
+      Rails.logger.error e.backtrace.join("\n")
     end
   end
 end
