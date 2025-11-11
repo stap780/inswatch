@@ -54,9 +54,11 @@
         </p>
       </div>
 
-      <div class="pt-4">
+      <div class="pt-4 flex flex-row items-center space-x-3">
         <%= link_to "Настройки приложения", "#", 
-            class: "inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" %>
+              class: "inline-flex items-center px-4 py-2 rounded-md text-white bg-blue-600 hover:bg-blue-700" %>
+        <%= link_to "Вернуться в магазин", "https://#{@user.shop}", 
+              class: "inline-flex items-center px-4 py-2 rounded-md text-gray-800 bg-gray-200 hover:bg-gray-300" %>
       </div>
     </div>
   </div>
