@@ -28,7 +28,7 @@ class InsalesBillingCheckJobTest < ActiveJob::TestCase
       }
     }
     
-    InsalesApiClient.any_instance.stubs(:get_recurring_charge).returns(mock_response)
+    InsalesApiService.any_instance.stubs(:get_recurring_charge).returns(mock_response)
     
     InsalesBillingCheckJob.perform_now
     
@@ -46,7 +46,7 @@ class InsalesBillingCheckJobTest < ActiveJob::TestCase
       error: "Not found"
     }
     
-    InsalesApiClient.any_instance.stubs(:get_recurring_charge).returns(mock_response)
+    InsalesApiService.any_instance.stubs(:get_recurring_charge).returns(mock_response)
     
     assert_nothing_raised do
       InsalesBillingCheckJob.perform_now

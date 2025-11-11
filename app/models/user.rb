@@ -16,12 +16,8 @@ class User < ApplicationRecord
     return unless insales_id.present? && shop.present? && installed? && insales_api_password.present?
     begin
       Rails.logger.info "Creating charge for user #{id}, shop: #{shop}, api_password present: #{insales_api_password.present?}"
-      client = InsalesApiClient.new(insales_api_password)
-      response = client.create_recurring_charge(
-        shop,
-        price: 690.0,
-        trial_days: 7
-      )
+      service = InsalesApiService.new(shop: shop, api_password: insales_api_password)
+      response = service.create_recurring_charge(price: 690.0, trial_days: 7)
       if response[:success]
         data = response[:data]
         update!(

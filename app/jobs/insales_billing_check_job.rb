@@ -9,8 +9,8 @@ class InsalesBillingCheckJob < ApplicationJob
 
       begin
         next unless user.insales_api_password.present?
-        client = InsalesApiClient.new(user.insales_api_password)
-        response = client.get_recurring_charge(user.shop, user.insales_charge_id)
+        service = InsalesApiService.new(shop: user.shop, api_password: user.insales_api_password)
+        response = service.get_recurring_charge(user.insales_charge_id)
 
         if response[:success]
           data = response[:data]
