@@ -17,6 +17,9 @@ class InsalesApiService
   def create_recurring_charge(price:, trial_days: 7, name: "Basic")
     configure
     
+    # Ensure price is a number (Float)
+    price = price.to_f
+    
     charge = InsalesApi::RecurringApplicationCharge.new(
       name: name,
       price: price,
@@ -30,10 +33,15 @@ class InsalesApiService
       data = data.transform_keys(&:to_s)
       { success: true, data: data }
     else
-      { success: false, error: charge.errors.full_messages.join(", ") }
+      error_messages = charge.errors.full_messages.join(", ")
+      Rails.logger.error "Charge validation failed: #{error_messages}"
+      { success: false, error: error_messages }
     end
   rescue ActiveResource::ResourceInvalid => e
-    { success: false, error: "Invalid request: #{e.message}" }
+    error_msg = "Invalid request: #{e.message}"
+    Rails.logger.error "ActiveResource::ResourceInvalid: #{error_msg}"
+    Rails.logger.error e.backtrace.join("\n") if e.respond_to?(:backtrace)
+    { success: false, error: error_msg }
   rescue ActiveResource::UnauthorizedAccess
     { success: false, error: "Unauthorized - check credentials" }
   rescue ActiveResource::ForbiddenAccess
