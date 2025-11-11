@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_11_115225) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_11_163626) do
   create_table "sessions", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "ip_address"
@@ -25,6 +25,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_11_115225) do
     t.string "charge_status"
     t.datetime "created_at", null: false
     t.string "email_address", null: false
+    t.string "insales_api_password"
     t.integer "insales_charge_id"
     t.string "insales_id"
     t.boolean "installed", default: false, null: false

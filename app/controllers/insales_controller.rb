@@ -7,14 +7,13 @@ class InsalesController < ApplicationController
   def install
     shop = params[:shop].to_s
     insales_id = params[:insales_id].to_s
-    signature = params[:token].presence || params[:signature].presence
+    token = params[:token].to_s
 
-    unless valid_signature?(request.query_parameters, Rails.application.credentials.insales_app_secret)
-      return render plain: "Invalid signature", status: :unauthorized
-    end
+    # Compute shop API password per InSales spec: MD5(token + secret)
+    api_password = Digest::MD5.hexdigest("#{token}#{Rails.application.credentials.insales_app_secret}")
 
     user = User.find_or_initialize_by(insales_id: insales_id)
-    user.update!(shop: shop, installed: true)
+    user.update!(shop: shop, installed: true, insales_api_password: api_password)
 
     head :ok
   end
@@ -23,9 +22,14 @@ class InsalesController < ApplicationController
   def login
     shop = params[:shop].to_s
     insales_id = params[:insales_id].to_s
+    token = params[:token].to_s
 
-    unless valid_signature?(request.query_parameters, Rails.application.credentials.insales_app_secret)
-      return render plain: "Invalid signature", status: :unauthorized
+    # Optional rotation: recompute password
+    if token.present?
+      api_password = Digest::MD5.hexdigest("#{token}#{Rails.application.credentials.insales_app_secret}")
+      if (user = User.find_by(insales_id: insales_id, shop: shop))
+        user.update!(insales_api_password: api_password)
+      end
     end
 
     user = User.find_by!(insales_id: insales_id, shop: shop)
@@ -37,7 +41,7 @@ class InsalesController < ApplicationController
     redirect_to dashboard_path
   end
 
-  # POST /insales/uninstall
+  # GET/POST /insales/uninstall
   def uninstall
     if params[:shop].present? && params[:insales_id].present?
       user = User.find_by(insales_id: params[:insales_id].to_s, shop: params[:shop].to_s)

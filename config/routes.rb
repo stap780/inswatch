@@ -6,6 +6,7 @@ Rails.application.routes.draw do
   resource :insales, only: [] do
     get  :install
     get  :login
+    get  :uninstall
     post :uninstall
     post :billing_start
     get  :billing_callback
