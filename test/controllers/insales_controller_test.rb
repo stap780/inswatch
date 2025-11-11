@@ -9,7 +9,6 @@ class InsalesControllerTest < ActionDispatch::IntegrationTest
     # Stub credentials
     Rails.application.credentials.stubs(:insales_app_secret).returns(@app_secret)
     Rails.application.credentials.stubs(:insales_app_identifier).returns("test_identifier")
-    Rails.application.credentials.stubs(:insales_billing_return_url).returns("https://example.com/insales/billing_callback")
   end
 
   def token_params(token: "token123", extra_params: {})
@@ -70,18 +69,5 @@ class InsalesControllerTest < ActionDispatch::IntegrationTest
     assert_not user.reload.installed
   end
 
-  test "billing_start requires authentication" do
-    post insales_billing_start_path
-
-    assert_redirected_to root_path
-  end
-
-  test "billing_callback with invalid signature returns 401" do
-    params = { shop: @shop, insales_id: @insales_id, token: "invalid" }
-
-    get insales_billing_callback_path, params: params
-
-    assert_response :unauthorized
-  end
 end
 

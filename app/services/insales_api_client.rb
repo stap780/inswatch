@@ -5,22 +5,23 @@ require "uri"
 class InsalesApiClient
   BASE_URL = "https://api.insales.ru"
 
-  def initialize
+  def initialize(api_password = nil)
     @app_identifier = Rails.application.credentials.insales_app_identifier
-    @app_secret = Rails.application.credentials.insales_app_secret
+    @api_password = api_password
   end
 
   # POST /admin/recurring_application_charges.json
-  def create_recurring_charge(shop, price:, return_url:, trial_days: 7, name: "Basic")
+  def create_recurring_charge(shop, price:, trial_days: 7, name: "Basic")
     url = URI("https://#{shop}/admin/recurring_application_charges.json")
     
+    charge_params = {
+      name: name,
+      price: price
+    }
+    charge_params[:trial_days] = trial_days if trial_days.present?
+    
     payload = {
-      recurring_application_charge: {
-        name: name,
-        price: price,
-        return_url: return_url,
-        trial_days: trial_days
-      }
+      recurring_application_charge: charge_params
     }
 
     response = make_request(:post, url, payload)
@@ -66,7 +67,7 @@ class InsalesApiClient
                     end
 
     request_class["Content-Type"] = "application/json"
-    request_class.basic_auth(@app_identifier, @app_secret)
+    request_class.basic_auth(@app_identifier, @api_password)
 
     if payload && (method == :post || method == :put)
       request_class.body = payload.to_json

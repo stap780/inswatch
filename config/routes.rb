@@ -8,8 +8,6 @@ Rails.application.routes.draw do
     get  :login
     get  :uninstall
     post :uninstall
-    post :billing_start
-    get  :billing_callback
   end
   
   # Dashboard

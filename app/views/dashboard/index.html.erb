@@ -61,10 +61,6 @@
     </div>
   </div>
 
-  <% if @user.charge_status != "active" || @user.blocked %>
-    <%= render "shared/paywall" %>
-  <% end %>
-
   <%= render "shared/flash" %>
 </div>
 
