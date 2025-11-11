@@ -57,16 +57,28 @@ class InsalesApiClient
     http.use_ssl = true
     http.read_timeout = 50
 
+    # Extract userinfo from URI if present (format: https://user:pass@host)
+    if uri.userinfo
+      user, password = uri.userinfo.split(":", 2)
+      uri.user = nil  # Clear userinfo from URI to avoid duplication
+      uri.password = nil
+    end
+
     request_class = case method
                     when :get
-                      Net::HTTP::Get.new(uri)
+                      Net::HTTP::Get.new(uri.request_uri)
                     when :post
-                      Net::HTTP::Post.new(uri)
+                      Net::HTTP::Post.new(uri.request_uri)
                     when :delete
-                      Net::HTTP::Delete.new(uri)
+                      Net::HTTP::Delete.new(uri.request_uri)
                     end
 
     request_class["Content-Type"] = "application/json"
+    
+    # Set Basic Auth if credentials were in URI
+    if user && password
+      request_class.basic_auth(user, password)
+    end
 
     if payload && (method == :post || method == :put)
       request_class.body = payload.to_json

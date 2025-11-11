@@ -8,8 +8,10 @@ class InsalesController < ApplicationController
     insales_id = params[:insales_id].to_s
     token = params[:token].to_s
 
-    # Compute shop API password per InSales spec: MD5(token + secret)
-    api_password = Digest::MD5.hexdigest("#{token}#{Rails.application.credentials.insales_app_secret}")
+    # Compute shop API password per InSales spec: MD5(token + secret_key)
+    # Formula: password = MD5(token + secret_key)
+    secret_key = Rails.application.credentials.insales_app_secret
+    api_password = Digest::MD5.hexdigest(token + secret_key)
 
     user = User.find_or_initialize_by(insales_id: insales_id)
     if user.new_record?
@@ -35,7 +37,8 @@ class InsalesController < ApplicationController
 
     # Optional rotation: recompute password
     if token.present?
-      api_password = Digest::MD5.hexdigest("#{token}#{Rails.application.credentials.insales_app_secret}")
+      secret_key = Rails.application.credentials.insales_app_secret
+      api_password = Digest::MD5.hexdigest(token + secret_key)
       if (user = User.find_by(insales_id: insales_id, shop: shop))
         user.update!(insales_api_password: api_password)
       end
