@@ -16,13 +16,10 @@ class InsalesApiService
   # Create recurring application charge
   def create_recurring_charge(price:, trial_days: 7, name: "Basic")
     configure
-    
-    # Ensure price is a number (Float)
-    price = price.to_f
-    
+        
     charge = InsalesApi::RecurringApplicationCharge.new(
       name: name,
-      price: price,
+      monthly: price,
       trial_days: trial_days
     )
     
