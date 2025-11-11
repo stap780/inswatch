@@ -13,7 +13,17 @@ class InsalesController < ApplicationController
     api_password = Digest::MD5.hexdigest("#{token}#{Rails.application.credentials.insales_app_secret}")
 
     user = User.find_or_initialize_by(insales_id: insales_id)
-    user.update!(shop: shop, installed: true, insales_api_password: api_password)
+    if user.new_record?
+      generated_email = "#{insales_id}@insales.local"
+      generated_password = SecureRandom.base58(24)
+      user.email_address = generated_email
+      user.password = generated_password
+      user.password_confirmation = generated_password
+    end
+    user.shop = shop
+    user.installed = true
+    user.insales_api_password = api_password
+    user.save!
 
     head :ok
   end
@@ -32,7 +42,18 @@ class InsalesController < ApplicationController
       end
     end
 
-    user = User.find_by!(insales_id: insales_id, shop: shop)
+    user = User.find_or_initialize_by(insales_id: insales_id, shop: shop)
+    if user.new_record?
+      generated_email = "#{insales_id}@insales.local"
+      generated_password = SecureRandom.base58(24)
+      user.email_address = generated_email
+      user.password = generated_password
+      user.password_confirmation = generated_password
+      user.installed = true
+      # if api_password computed above, set it; otherwise keep existing or nil
+      user.insales_api_password ||= api_password if defined?(api_password)
+      user.save!
+    end
     user.update!(last_login_at: Time.current)
 
     # Use existing authentication system
