@@ -9,6 +9,11 @@ class User < ApplicationRecord
   validates :shop, presence: true, if: -> { shop.present? }
 
   after_create_commit :create_insales_charge_after_install, if: -> { installed? }
+  after_create_commit :add_mark_connection_after_install, if: -> { installed? }
+
+  def mark_installed?
+    mark_installed == true
+  end
 
   private
 
@@ -17,7 +22,7 @@ class User < ApplicationRecord
     begin
       Rails.logger.info "Creating charge for user #{id}, shop: #{shop}, api_password present: #{insales_api_password.present?}"
       service = InsalesApiService.new(shop: shop, api_password: insales_api_password)
-      response = service.create_recurring_charge(price: 690.0, trial_days: 7)
+      response = service.create_recurring_charge(price: 799.0, trial_days: 7)
       if response[:success]
         data = response[:data]
         update!(
@@ -36,5 +41,12 @@ class User < ApplicationRecord
       Rails.logger.error "Create charge after install exception for user #{id}: #{e.message}"
       Rails.logger.error e.backtrace.join("\n")
     end
+  end
+
+  def add_mark_connection_after_install
+    return if mark_installed? # Уже установлено
+    return unless email_address.present? # Нужен email для связи
+    
+    MarkAutoLoginService.install_mark_connection(self)
   end
 end

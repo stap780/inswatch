@@ -10,7 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_11_163626) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_13_155515) do
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "pg_catalog.plpgsql"
+
   create_table "sessions", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "ip_address"
@@ -30,6 +33,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_11_163626) do
     t.string "insales_id"
     t.boolean "installed", default: false, null: false
     t.datetime "last_login_at"
+    t.boolean "mark_installed", default: false, null: false
     t.decimal "monthly", precision: 10, scale: 2
     t.date "paid_till"
     t.string "password_digest", null: false

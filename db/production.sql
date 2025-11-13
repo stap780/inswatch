@@ -1,0 +1,4 @@
+CREATE DATABASE inswatch_production;
+CREATE DATABASE inswatch_production_cache;
+CREATE DATABASE inswatch_production_queue;
+CREATE DATABASE inswatch_production_cable;

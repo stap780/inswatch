@@ -55,8 +55,14 @@
       </div>
 
       <div class="pt-4 flex flex-row items-center space-x-3">
-        <%= link_to "Настройки приложения", "#", 
-              class: "inline-flex items-center px-4 py-2 rounded-md text-white bg-blue-600 hover:bg-blue-700" %>
+        <% if @user.mark_installed? %>
+          <%= link_to "Настройки приложения", mark_login_path, 
+                class: "inline-flex items-center px-4 py-2 rounded-md text-white bg-blue-600 hover:bg-blue-700",
+                data: { turbo: false } %>
+        <% else %>
+          <%= link_to "Настройки приложения", "#", 
+                class: "inline-flex items-center px-4 py-2 rounded-md text-white bg-blue-600 hover:bg-blue-700" %>
+        <% end %>
         <%= link_to "Вернуться в магазин", "https://#{@user.shop}/admin", 
               class: "inline-flex items-center px-4 py-2 rounded-md text-gray-800 bg-gray-200 hover:bg-gray-300" %>
       </div>

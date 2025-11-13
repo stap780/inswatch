@@ -10,6 +10,11 @@ Rails.application.routes.draw do
     post :uninstall
   end
   
+  # Mark integration routes
+  namespace :mark do
+    get :login
+  end
+  
   # Dashboard
   get "dashboard", to: "dashboard#index", as: :dashboard
   
