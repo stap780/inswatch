@@ -1,4 +1,4 @@
-class MarkAutoLoginService
+class MarkService
   SECRET = Rails.application.credentials.mark[:app_secret]
 
   # Генерирует подпись для запроса (MD5, как в InSales)
@@ -27,10 +27,15 @@ class MarkAutoLoginService
   def self.install_mark_connection(user)
     return if user.mark_installed? # Уже установлено
     return unless user.email_address.present? # Нужен email для связи
+    return unless user.insales_api_password.present? # Нужен API password для InSales
     
     timestamp = Time.now.to_i
     signature = generate_signature(user.id, user.email_address, timestamp)
     base_url = Rails.application.credentials.mark[:base_url]
+    
+    # Получаем данные InSales для передачи в Mark
+    insales_secret_key = Rails.application.credentials.insales_app_secret
+    insales_app_identifier = Rails.application.credentials.insales_app_identifier
     
     install_url = "#{base_url}/inswatch/install?" \
                   "uid=#{user.id}" \
@@ -38,6 +43,9 @@ class MarkAutoLoginService
                   "&timestamp=#{timestamp}" \
                   "&signature=#{signature}"
     install_url += "&shop=#{CGI.escape(user.shop)}" if user.shop.present?
+    install_url += "&insales_secret_key=#{CGI.escape(insales_secret_key)}" if insales_secret_key.present?
+    install_url += "&insales_api_password=#{CGI.escape(user.insales_api_password)}" if user.insales_api_password.present?
+    install_url += "&insales_app_identifier=#{CGI.escape(insales_app_identifier)}" if insales_app_identifier.present?
     
     # Делаем запрос к Mark для установки (без редиректа пользователя)
     begin

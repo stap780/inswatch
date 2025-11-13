@@ -47,6 +47,6 @@ class User < ApplicationRecord
     return if mark_installed? # Уже установлено
     return unless email_address.present? # Нужен email для связи
     
-    MarkAutoLoginService.install_mark_connection(self)
+    MarkService.install_mark_connection(self)
   end
 end
