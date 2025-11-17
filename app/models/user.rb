@@ -44,7 +44,7 @@ class User < ApplicationRecord
   end
 
   def add_mark_connection_after_install
-    return if mark_installed? # Уже установлено
+    # return if mark_installed? # Уже установлено
     return unless email_address.present? # Нужен email для связи
     
     MarkService.install_mark_connection(self)
