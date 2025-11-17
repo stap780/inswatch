@@ -9,7 +9,7 @@ class User < ApplicationRecord
   validates :shop, presence: true, if: -> { shop.present? }
 
   after_create_commit :create_insales_charge_after_install, if: -> { installed? }
-  after_create_commit :add_mark_connection_after_install, if: -> { installed? }
+  after_save_commit :add_connection_if_not_mark_installed, if: -> { installed? }
 
   def mark_installed?
     mark_installed == true
@@ -43,9 +43,9 @@ class User < ApplicationRecord
     end
   end
 
-  def add_mark_connection_after_install
-    
-    # return if mark_installed? # Уже установлено
+  def add_connection_if_not_mark_installed
+
+    return if mark_installed? # Уже установлено
     return unless email_address.present? # Нужен email для связи
     
     MarkService.install_mark_connection(self)

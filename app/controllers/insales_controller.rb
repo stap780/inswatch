@@ -68,7 +68,7 @@ class InsalesController < ApplicationController
   def uninstall
     if params[:shop].present? && params[:insales_id].present?
       user = User.find_by(insales_id: params[:insales_id].to_s, shop: params[:shop].to_s)
-      user&.update!(installed: false)
+      user&.update!(installed: false, mark_installed: false)
     end
 
     head :ok
