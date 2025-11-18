@@ -22,7 +22,7 @@ class User < ApplicationRecord
     begin
       Rails.logger.info "Creating charge for user #{id}, shop: #{shop}, api_password present: #{insales_api_password.present?}"
       service = InsalesApiService.new(shop: shop, api_password: insales_api_password)
-      response = service.create_recurring_charge(price: 799.0, trial_days: 7)
+      response = service.create_recurring_charge(price: 799.0, trial_days: 10)
       if response[:success]
         data = response[:data]
         update!(

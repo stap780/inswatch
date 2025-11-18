@@ -36,26 +36,32 @@ class InsalesController < ApplicationController
     token = params[:token].to_s
 
     # Optional rotation: recompute password
+    api_password = nil
     if token.present?
       secret_key = Rails.application.credentials.insales_app_secret
       api_password = Digest::MD5.hexdigest(token + secret_key)
-      if (user = User.find_by(insales_id: insales_id, shop: shop))
-        user.update!(insales_api_password: api_password)
-      end
     end
 
-    user = User.find_or_initialize_by(insales_id: insales_id, shop: shop)
-    if user.new_record?
+    # Find by insales_id first (since it's unique), then check/update shop
+    user = User.find_by(insales_id: insales_id)
+    
+    if user.nil?
+      # Create new user
+      user = User.new(insales_id: insales_id, shop: shop)
       generated_email = "#{insales_id}@insales.local"
       generated_password = SecureRandom.base58(24)
       user.email_address = generated_email
       user.password = generated_password
       user.password_confirmation = generated_password
       user.installed = true
-      # if api_password computed above, set it; otherwise keep existing or nil
-      user.insales_api_password ||= api_password if defined?(api_password)
+      user.insales_api_password = api_password if api_password.present?
       user.save!
+    else
+      # Update existing user's shop if different, and update password if provided
+      user.update!(shop: shop) if user.shop != shop
+      user.update!(insales_api_password: api_password) if api_password.present? && user.insales_api_password != api_password
     end
+    
     user.update!(last_login_at: Time.current)
 
     # Use existing authentication system
