@@ -28,6 +28,8 @@ class InsalesApiService
       data = charge.attributes.dup
       # Convert string keys to match expected format
       data = data.transform_keys(&:to_s)
+      # Note: InSales doesn't return 'id' or 'status' in charge data
+      # Available fields: monthly, trial_expired_at, created_at, updated_at, paid_till, blocked
       { success: true, data: data }
     else
       error_messages = charge.errors.full_messages.join(", ")
@@ -49,30 +51,42 @@ class InsalesApiService
     { success: false, error: "Request failed: #{e.message}" }
   end
 
-  # Get recurring application charge by ID
-  def get_recurring_charge(charge_id)
+  # Get current recurring application charge (InSales doesn't provide ID)
+  def get_recurring_charge
     configure
     
-    charge = InsalesApi::RecurringApplicationCharge.find(charge_id)
-    # Convert ActiveResource attributes to hash with string keys
-    data = charge.attributes.dup.transform_keys(&:to_s)
-    { success: true, data: data }
-  rescue ActiveResource::ResourceNotFound
-    { success: false, error: "Not found" }
-  rescue ActiveResource::UnauthorizedAccess
-    { success: false, error: "Unauthorized - check credentials" }
-  rescue ActiveResource::ForbiddenAccess
-    { success: false, error: "Forbidden - check app permissions" }
-  rescue => e
-    { success: false, error: "Request failed: #{e.message}" }
+    # InSales API doesn't provide ID for charge, so we get the current charge
+    # Use find without parameters to get current charge
+    begin
+      charge = InsalesApi::RecurringApplicationCharge.find
+      
+      if charge && charge.respond_to?(:attributes)
+        # Convert ActiveResource attributes to hash with string keys
+        data = charge.attributes.dup.transform_keys(&:to_s)
+        { success: true, data: data }
+      else
+        { success: false, error: "No charge found" }
+      end
+    rescue ActiveResource::ResourceNotFound
+      { success: false, error: "Not found" }
+    rescue ActiveResource::UnauthorizedAccess
+      { success: false, error: "Unauthorized - check credentials" }
+    rescue ActiveResource::ForbiddenAccess
+      { success: false, error: "Forbidden - check app permissions" }
+    rescue => e
+      { success: false, error: "Request failed: #{e.message}" }
+    end
   end
 
-  # Destroy recurring application charge
-  def destroy_recurring_charge(charge_id)
+  # Destroy current recurring application charge
+  def destroy_recurring_charge
     configure
     
-    charge = InsalesApi::RecurringApplicationCharge.find(charge_id)
-    if charge.destroy
+    charge = get_recurring_charge
+    return charge unless charge[:success]
+    
+    charge_obj = InsalesApi::RecurringApplicationCharge.new(charge[:data])
+    if charge_obj.destroy
       { success: true, data: { status: "ok" } }
     else
       { success: false, error: "Failed to destroy charge" }
@@ -85,13 +99,19 @@ class InsalesApiService
     { success: false, error: "Request failed: #{e.message}" }
   end
 
-  # Add free days to recurring application charge
-  def add_free_days(charge_id, days)
+  # Add free days to current recurring application charge
+  def add_free_days(days)
     configure
     
+    # Get current charge first
+    charge_response = get_recurring_charge
+    return charge_response unless charge_response[:success]
+    
     # Use ActiveResource post method for custom action
+    # Since we don't have ID, we'll need to use a different approach
+    # Try posting to the charge endpoint directly
     response = InsalesApi::RecurringApplicationCharge.post(
-      "#{charge_id}/add_free_days",
+      "add_free_days",
       { days: days }.to_json,
       { "Content-Type" => "application/json" }
     )

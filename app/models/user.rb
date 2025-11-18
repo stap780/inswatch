@@ -15,6 +15,35 @@ class User < ApplicationRecord
     mark_installed == true
   end
 
+  # Determine charge status based on blocked and paid_till
+  def determine_charge_status(data = nil)
+    data ||= {
+      "blocked" => blocked,
+      "paid_till" => paid_till&.to_s,
+      "trial_expired_at" => trial_ends_at&.to_s
+    }
+    
+    return "cancelled" if data["blocked"] == true
+    
+    if data["paid_till"].present?
+      paid_date = Date.parse(data["paid_till"]) rescue nil
+      if paid_date && Date.today <= paid_date
+        return "active"
+      elsif paid_date && Date.today > paid_date
+        return "declined"
+      end
+    end
+    
+    if data["trial_expired_at"].present?
+      trial_date = Date.parse(data["trial_expired_at"]) rescue nil
+      if trial_date && Date.today <= trial_date
+        return "pending"
+      end
+    end
+    
+    "pending"
+  end
+
   private
 
   def create_insales_charge_after_install
@@ -25,15 +54,17 @@ class User < ApplicationRecord
       response = service.create_recurring_charge(price: 799.0, trial_days: 10)
       if response[:success]
         data = response[:data]
+        # InSales doesn't provide 'id' or 'status' in charge data
+        # Determine status based on blocked and paid_till
+        status = determine_charge_status(data)
         update!(
-          insales_charge_id: data["id"],
-          charge_status: data["status"] || "pending",
           monthly: data["monthly"]&.to_d,
           trial_ends_at: data["trial_expired_at"]&.to_date,
           paid_till: data["paid_till"]&.to_date,
-          blocked: data["blocked"] || false
+          blocked: data["blocked"] || false,
+          charge_status: status
         )
-        Rails.logger.info "Charge created successfully for user #{id}, charge_id: #{data['id']}"
+        Rails.logger.info "Charge created successfully for user #{id}"
       else
         Rails.logger.error "Create charge after install failed for user #{id}: #{response[:error]}"
       end

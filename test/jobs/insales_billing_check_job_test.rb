@@ -7,7 +7,8 @@ class InsalesBillingCheckJobTest < ActiveJob::TestCase
       password: "password",
       insales_id: "12345",
       shop: "test-shop.myinsales.ru",
-      insales_charge_id: 999
+      installed: true,
+      insales_api_password: "test_password"
     )
     
     Rails.application.credentials.stubs(:insales_app_identifier).returns("test_identifier")
@@ -15,14 +16,12 @@ class InsalesBillingCheckJobTest < ActiveJob::TestCase
   end
 
   test "updates user billing information" do
-    # Mock API response
+    # Mock API response (InSales doesn't provide 'id' or 'status')
     mock_response = {
       success: true,
       data: {
-        "id" => 999,
-        "status" => "active",
-        "monthly" => "690.0",
-        "trial_expired_at" => "2025-11-18",
+        "monthly" => "799.0",
+        "trial_expired_at" => "2025-11-23",
         "paid_till" => "2025-12-11",
         "blocked" => false
       }
@@ -33,9 +32,11 @@ class InsalesBillingCheckJobTest < ActiveJob::TestCase
     InsalesBillingCheckJob.perform_now
     
     @user.reload
+    # Status should be determined based on blocked and paid_till
+    # Since paid_till is in the future and blocked is false, status should be "active"
     assert_equal "active", @user.charge_status
-    assert_equal 690.0, @user.monthly.to_f
-    assert_equal Date.parse("2025-11-18"), @user.trial_ends_at
+    assert_equal 799.0, @user.monthly.to_f
+    assert_equal Date.parse("2025-11-23"), @user.trial_ends_at
     assert_equal Date.parse("2025-12-11"), @user.paid_till
     assert_not @user.blocked
   end
