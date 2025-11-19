@@ -9,7 +9,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const consentOffer = document.getElementById('consent_offer');
     const btn = document.querySelector('.settings-button');
     if (!btn) return;
-    btn.disabled = !(consentPersonal.checked && consentOffer.checked);
+    const enabled = consentPersonal.checked && consentOffer.checked;
+    btn.disabled = !enabled;
     if (btn.disabled) {
       btn.classList.add('opacity-50', 'cursor-not-allowed');
     } else {
@@ -17,11 +18,21 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
+  function settingsButtonClickHandler(e) {
+    const consentPersonal = document.getElementById('consent_personal');
+    const consentOffer = document.getElementById('consent_offer');
+    if (!(consentPersonal && consentOffer && consentPersonal.checked && consentOffer.checked)) {
+      e.preventDefault();
+    }
+  }
+
   const personalCb = document.getElementById('consent_personal');
   const offerCb = document.getElementById('consent_offer');
-  if (personalCb && offerCb) {
+  const btn = document.querySelector('.settings-button');
+  if (personalCb && offerCb && btn) {
     personalCb.addEventListener('change', updateSettingsButtonState);
     offerCb.addEventListener('change', updateSettingsButtonState);
+    btn.addEventListener('click', settingsButtonClickHandler);
     updateSettingsButtonState();
   }
 });
