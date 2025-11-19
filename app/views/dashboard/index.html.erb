@@ -57,7 +57,7 @@
       <div class="pt-4 flex flex-row items-center space-x-3">
         <% if @user.mark_installed? %>
           <%= link_to "Настройки приложения", mark_login_path, 
-                class: "inline-flex items-center px-4 py-2 rounded-md text-white bg-blue-600 hover:bg-blue-700",
+                class: "settings-button inline-flex items-center px-4 py-2 rounded-md text-white bg-blue-600 hover:bg-blue-700",
                 data: { turbo: false } %>
         <% else %>
           <%= link_to "Настройки приложения", "#", 
@@ -66,6 +66,22 @@
         <%= link_to "Вернуться в магазин", "https://#{@user.shop}/admin", 
               class: "inline-flex items-center px-4 py-2 rounded-md text-gray-800 bg-gray-200 hover:bg-gray-300" %>
       </div>
+
+      <div class="mt-6 space-y-2">
+        <div class="flex items-start">
+          <input type="checkbox" id="consent_personal" name="consent_personal" class="mt-1 mr-2 accent-blue-600" checked />
+          <label for="consent_personal" class="text-sm text-gray-700 select-none">
+            Согласен на обработку персональных данных (<a href="https://two-g.ru/Политика_конфиденциальности_Swatches_Options.docx" target="_blank" class="text-blue-600 underline hover:text-blue-800">посмотреть</a>)
+          </label>
+        </div>
+        <div class="flex items-start">
+          <input type="checkbox" id="consent_offer" name="consent_offer" class="mt-1 mr-2 accent-blue-600" checked />
+          <label for="consent_offer" class="text-sm text-gray-700 select-none">
+            Согласен с условиями пользования сервисом / офертой (<a href="https://two-g.ru/Оферта_Swatches_Options.docx" target="_blank" class="text-blue-600 underline hover:text-blue-800">посмотреть</a>)
+          </label>
+        </div>
+      </div>
+      
     </div>
   </div>
 
