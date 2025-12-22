@@ -55,7 +55,11 @@
       </div>
 
       <div class="pt-4 flex flex-row items-center space-x-3">
-        <% if @user.mark_installed? %>
+        <%= link_to "Настройки приложения", mark_login_path, 
+          class: "settings-button inline-flex items-center px-4 py-2 rounded-md text-white bg-blue-600 hover:bg-blue-700 hidden",
+          data: { turbo: false } %>
+
+        <% if @user.mark_installed? && @user.charge_status != "cancelled" %>
           <%= link_to "Настройки приложения", mark_login_path, 
                 class: "settings-button inline-flex items-center px-4 py-2 rounded-md text-white bg-blue-600 hover:bg-blue-700",
                 data: { turbo: false } %>
